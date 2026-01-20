@@ -1,7 +1,11 @@
+using Api.Endpoints;
+using Application.Core;
+using Application.Interfaces;
+using Application.Sessions;
+using Infrastructure.Persistence;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Application.Interfaces;
-using Infrastructure.Persistence;
+using Scalar.AspNetCore;
 
 internal class Program
 {
@@ -12,9 +16,13 @@ internal class Program
 		var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 		builder.Services.AddDbContext<AppDbContext>(options =>
 			options.UseNpgsql(connectionString));
+		builder.Services.AddScoped<IAppDbContext>(provider =>
+			provider.GetRequiredService<AppDbContext>());
+
+		builder.Services.AddSingleton<SessionMapper>();
 
 		builder.Services.AddOpenApi();
-		builder.Services.AddMediatR(cfg => 
+		builder.Services.AddMediatR(cfg =>
 			cfg.RegisterServicesFromAssembly(typeof(IAppDbContext).Assembly));
 
 		var app = builder.Build();
@@ -22,12 +30,10 @@ internal class Program
 		if (app.Environment.IsDevelopment())
 		{
 			app.MapOpenApi();
+			app.MapScalarApiReference();
 		}
 
-		app.MapPost("/api/sessions", (IMediator mediator, CancellationToken ct) =>
-		{
-			mediator.Send();
-		});
+		app.MapSessionsEndpoints();
 
 		app.Run();
 	}

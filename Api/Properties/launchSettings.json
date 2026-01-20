@@ -2,15 +2,16 @@
   "profiles": {
     "http": {
       "commandName": "Project",
+      "launchUrl": "scalar/v1",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "dotnetRunMessages": true,
-      "applicationUrl": "http://localhost:5277"
+      "applicationUrl": "http://localhost:5000"
     },
     "Container (Dockerfile)": {
       "commandName": "Docker",
-      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}",
+      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/scalar/v1",
       "environmentVariables": {
         "ASPNETCORE_HTTP_PORTS": "8080"
       },
@@ -18,5 +19,5 @@
       "useSSL": false
     }
   },
-  "$schema": "https://json.schemastore.org/launchsettings.json"
+  "$schema": "http://json.schemastore.org/launchsettings.json"
 }

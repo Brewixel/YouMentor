@@ -1,0 +1,16 @@
+# Top-most EditorConfig file
+root = true
+
+[*]
+indent_style = tab
+indent_size = 4
+tab_width = 4
+end_of_line = crlf           # Окончания строк Windows
+charset = utf-8
+trim_trailing_whitespace = true # Удалять пробелы в конце строк
+insert_final_newline = true  # Пустая строка в конце файла (стандарт git)
+
+[*.cs]
+indent_style = tab
+indent_size = 4
+csharp_style_namespace_declarations = file_scoped:warning
