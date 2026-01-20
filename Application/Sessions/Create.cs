@@ -12,16 +12,16 @@ public class Create
 {
 	public class Command : IRequest<Result<Guid>>
 	{
-		public CreateSessionDto Session { get; set; }
+		public required CreateSessionDto Session { get; set; }
 	}
 
 	public class Handler(IAppDbContext _context) : IRequestHandler<Command, Result<Guid>>
 	{
-		public async Task<Result<Guid>> Handle(Command request, CancellationToken cancellationToken)
+		public async Task<Result<Guid>> Handle(Command request, CancellationToken ct)
 		{
 			var session = new Session(request.Session.MentorId, request.Session.StartTime, request.Session.Duration);
 			_context.Sessions.Add(session);
-			var result = await _context.SaveChangesAsync(cancellationToken) > 0;
+			var result = await _context.SaveChangesAsync(ct) > 0;
 
 			if (!result)
 				return Result<Guid>.Failure("Failed to create session");

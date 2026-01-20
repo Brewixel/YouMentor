@@ -1,14 +1,8 @@
 using Api.Extensions;
 using Application.Sessions;
-using Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.OpenApi;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Api.Endpoints;
 
@@ -18,7 +12,9 @@ public static class SessionsEndpoints
 	{
 		var group = app.MapGroup("api/sessions");
 		group.MapPost("/", CreateSession);
-		group.MapGet("/", GetSessions);
+		group.MapGet("/", GetAllSessions);
+		group.MapGet("/free", GetFreeSessions);
+		group.MapGet("/by-mentor/{mentorId:guid}", GetMentorSessions);
 	}
 
 	private static async Task<Results<Ok<Guid>, NotFound, BadRequest<string>>> CreateSession(
@@ -26,15 +22,37 @@ public static class SessionsEndpoints
 		CancellationToken ct,
 		[FromBody] CreateSessionDto session)
 	{
-		var result = await mediator.Send(new Create.Command { Session = session });
+		var result = await mediator.Send(
+			new Create.Command { Session = session });
 		return result.ToHttpResult();
 	}
 
-	private static async Task<Results<Ok<List<SessionDto>>, NotFound, BadRequest<string>>> GetSessions(
+	private static async Task<Results<Ok<List<SessionDto>>, NotFound, BadRequest<string>>> GetAllSessions(
 		ISender mediator,
 		CancellationToken ct)
 	{
-		var result = await mediator.Send(new List.Query());
+		var result = await mediator.Send(new List.Query(), ct);
+		return result.ToHttpResult();
+	}
+
+	private static async Task<Results<Ok<List<SessionDto>>, NotFound, BadRequest<string>>> GetFreeSessions(
+		ISender mediator,
+		CancellationToken ct)
+	{
+		var result = await mediator.Send(
+			new List.Query { OnlyFree = true },
+			ct);
+		return result.ToHttpResult();
+	}
+
+	private static async Task<Results<Ok<List<SessionDto>>, NotFound, BadRequest<string>>> GetMentorSessions(
+		ISender mediator,
+		CancellationToken ct,
+		Guid mentorId)
+	{
+		var result = await mediator.Send(
+			new List.Query { MentorId = mentorId },
+			ct);
 		return result.ToHttpResult();
 	}
 }
