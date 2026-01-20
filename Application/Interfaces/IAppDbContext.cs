@@ -1,14 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace Application.Interfaces
+namespace Application.Interfaces;
+
+public interface IAppDbContext
 {
-	public interface IAppDbContext
-	{
-		DbSet<Session> Sessions { get; }
-		Task<int> SaveChangesAsync(CancellationToken cancellationToken);
-	}
+	DbSet<Session> Sessions { get; }
+	Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }

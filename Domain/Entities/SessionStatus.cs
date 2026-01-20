@@ -1,14 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Domain.Entities
+namespace Domain.Entities;
+
+public enum SessionStatus
 {
-	public enum SessionStatus
-	{
-		Free,
-		Booked,
-		Completed,
-		Canceled
-	}
+	Free,
+	Booked,
+	Completed,
+	Canceled
 }

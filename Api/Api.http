@@ -1,6 +1,0 @@
-@Api_HostAddress = http://localhost:5277
-
-POST {{Api_HostAddress}}/api/sessions/
-Accept: application/json
-
-###

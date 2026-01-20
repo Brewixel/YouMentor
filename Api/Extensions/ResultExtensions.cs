@@ -5,22 +5,21 @@ using System.Threading.Tasks;
 using Application.Core;
 using Microsoft.AspNetCore.Http.HttpResults;
 
-namespace Api.Extensions
+namespace Api.Extensions;
+
+public static class ResultExtensions
 {
-	public static class ResultExtensions
+	public static Results<Ok<T>, NotFound, BadRequest<string>> ToHttpResult<T>(this Result<T> result)
 	{
-		public static Results<Ok<T>, NotFound, BadRequest<string>> ToHttpResult<T>(this Result<T> result)
+		if (result == null
+			|| result.IsSuccess && result.Value == null)
 		{
-			if (result == null
-				|| result.IsSuccess && result.Value == null)
-			{
-				return TypedResults.NotFound();
-			}
-
-			if (result.IsSuccess && result.Value != null)
-				return TypedResults.Ok(result.Value);
-
-			return TypedResults.BadRequest(result.Error);
+			return TypedResults.NotFound();
 		}
+
+		if (result.IsSuccess && result.Value != null)
+			return TypedResults.Ok(result.Value);
+
+		return TypedResults.BadRequest(result.Error);
 	}
 }
