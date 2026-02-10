@@ -1,4 +1,4 @@
-using Application.Core;
+using Application.Core.Specifications;
 using Domain.Entities;
 using System.Linq.Expressions;
 

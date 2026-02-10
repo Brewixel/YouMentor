@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 using System.Reflection.Metadata.Ecma335;
 using System.Text;
 
-namespace Application.Core;
+namespace Application.Core.Specifications;
 
 public abstract class Specification<T>
 {

@@ -5,6 +5,7 @@ using System.Text;
 using Application.Core;
 using Application.Interfaces;
 using Domain.Entities;
+using Domain.Results;
 
 namespace Application.Sessions;
 

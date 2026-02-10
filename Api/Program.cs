@@ -2,6 +2,7 @@ using Api.Endpoints;
 using Application.Core;
 using Application.Interfaces;
 using Application.Sessions;
+using FluentValidation;
 using Infrastructure.Persistence;
 using MediatR;
 using Microsoft.EntityFrameworkCore;

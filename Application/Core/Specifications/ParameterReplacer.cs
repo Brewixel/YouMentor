@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Text;
 
-namespace Application.Core;
+namespace Application.Core.Specifications;
 
 public class ParameterReplacer(ParameterExpression oldParameter, ParameterExpression newParameter)
 	: ExpressionVisitor

@@ -15,9 +15,10 @@ public static class SessionsEndpoints
 		group.MapGet("/", GetAllSessions);
 		group.MapGet("/free", GetFreeSessions);
 		group.MapGet("/by-mentor/{mentorId:guid}", GetMentorSessions);
+		group.MapPost("/book", BookSession);
 	}
 
-	private static async Task<Results<Ok<Guid>, NotFound, BadRequest<string>>> CreateSession(
+	private static async Task<IResult> CreateSession(
 		ISender mediator,
 		CancellationToken ct,
 		[FromBody] CreateSessionDto session)
@@ -27,7 +28,7 @@ public static class SessionsEndpoints
 		return result.ToHttpResult();
 	}
 
-	private static async Task<Results<Ok<List<SessionDto>>, NotFound, BadRequest<string>>> GetAllSessions(
+	private static async Task<IResult> GetAllSessions(
 		ISender mediator,
 		CancellationToken ct)
 	{
@@ -35,7 +36,7 @@ public static class SessionsEndpoints
 		return result.ToHttpResult();
 	}
 
-	private static async Task<Results<Ok<List<SessionDto>>, NotFound, BadRequest<string>>> GetFreeSessions(
+	private static async Task<IResult> GetFreeSessions(
 		ISender mediator,
 		CancellationToken ct)
 	{
@@ -45,7 +46,7 @@ public static class SessionsEndpoints
 		return result.ToHttpResult();
 	}
 
-	private static async Task<Results<Ok<List<SessionDto>>, NotFound, BadRequest<string>>> GetMentorSessions(
+	private static async Task<IResult> GetMentorSessions(
 		ISender mediator,
 		CancellationToken ct,
 		Guid mentorId)
@@ -53,6 +54,15 @@ public static class SessionsEndpoints
 		var result = await mediator.Send(
 			new List.Query { MentorId = mentorId },
 			ct);
+		return result.ToHttpResult();
+	}
+
+	private static async Task<IResult> BookSession(
+		ISender mediator,
+		CancellationToken ct,
+		[FromBody] Book.Command command)
+	{
+		var result = await mediator.Send(command, ct);
 		return result.ToHttpResult();
 	}
 }

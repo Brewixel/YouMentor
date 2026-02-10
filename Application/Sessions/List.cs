@@ -1,7 +1,9 @@
 using Application.Core;
+using Application.Core.Specifications;
 using Application.Interfaces;
 using Application.Sessions.Specifications;
 using Domain.Entities;
+using Domain.Results;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 

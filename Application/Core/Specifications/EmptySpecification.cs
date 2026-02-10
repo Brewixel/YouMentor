@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Text;
 
-namespace Application.Core;
+namespace Application.Core.Specifications;
 
 public class EmptySpecification<T> : Specification<T>
 {

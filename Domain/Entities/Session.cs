@@ -1,6 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
+using Domain.Results;
 
 namespace Domain.Entities;
 
@@ -30,15 +28,17 @@ public class Session
 
 	protected Session() { }
 
-	public void Book(Guid studentId)
+	public Result Book(Guid studentId)
 	{
 		if (Status != SessionStatus.Free)
-			throw new InvalidOperationException("This slot is already taken or cancelled.");
+			return Result.Conflict("This slot is already taken or cancelled.");
 
 		if (studentId == Guid.Empty)
-			throw new ArgumentException("Incorrect student Id.");
+			return Result.Validation("Incorrect student Id.");
 
 		StudentId = studentId;
 		Status = SessionStatus.Booked;
+
+		return Result.Success();
 	}
 }

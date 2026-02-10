@@ -1,25 +1,38 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Application.Core;
-using Microsoft.AspNetCore.Http.HttpResults;
+using Domain.Results;
 
 namespace Api.Extensions;
 
 public static class ResultExtensions
 {
-	public static Results<Ok<T>, NotFound, BadRequest<string>> ToHttpResult<T>(this Result<T> result)
+	public static IResult ToHttpResult(this Result result)
 	{
-		if (result == null
-			|| result.IsSuccess && result.Value == null)
+		if (result.IsSuccess)
+			return Results.NoContent();
+
+		return GetHttpError(result.ErrorInfo);
+	}
+
+	public static IResult ToHttpResult<T>(this Result<T> result)
+	{
+		if (result.IsSuccess)
+			return Results.Ok(result.Value);
+
+		return GetHttpError(result.ErrorInfo);
+	}
+
+	private static IResult GetHttpError(ErrorInfo errorInfo)
+	{
+		return errorInfo.Type switch
 		{
-			return TypedResults.NotFound();
-		}
-
-		if (result.IsSuccess && result.Value != null)
-			return TypedResults.Ok(result.Value);
-
-		return TypedResults.BadRequest(result.Error);
+			ErrorType.Validation => TypedResults.BadRequest(errorInfo.Message),
+			ErrorType.NotFound => TypedResults.NotFound(errorInfo.Message),
+			ErrorType.Conflict => TypedResults.Conflict(errorInfo.Message),
+			_ => TypedResults.Problem // Для Failure и остальных
+			(
+				errorInfo.Message,
+				statusCode: 500,
+				title: "Server error"
+			)
+		};
 	}
 }
