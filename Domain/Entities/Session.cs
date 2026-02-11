@@ -13,6 +13,7 @@ public class Session
 	public TimeSpan Duration { get; private set; }
 
 	public SessionStatus Status { get; private set; }
+	public uint Version { get; private set; }
 
 	public Session(Guid mentorId, DateTime startTime, TimeSpan duration)
 	{

@@ -19,7 +19,7 @@ Framework: .NET 10 (ASP.NET Core Web API)
 
 Database: PostgreSQL / Entity Framework Core
 
-Logic: MediatR (CQRS), FluentValidation
+Logic: MediatR (CQRS), FluentValidation, Polly
 
 Testing: xUnit, Moq (В планах)
 
@@ -37,7 +37,9 @@ Future Stack: RabbitMQ, Redis, Docker, OpenTelemetry, Dapper
 
 [x] REST API: Реализация Minimal APIs через расширения IEndpointRouteBuilder.
 
-[ ] Контроль конкуренции: Optimistic Concurrency (RowVersion) для защиты от овербукинга.
+[x] Контроль конкуренции: Optimistic Concurrency (RowVersion) для защиты от овербукинга.
+
+[x] Самописные Retry.
 
 [ ] Unit Testing: Покрытие бизнес-логики тестами.
 
