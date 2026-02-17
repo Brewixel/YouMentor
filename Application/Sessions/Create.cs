@@ -20,11 +20,22 @@ public class Create
 	{
 		public async Task<Result<Guid>> Handle(Command request, CancellationToken ct)
 		{
-			var session = new Session(request.Session.MentorId, request.Session.StartTime, request.Session.Duration);
-			_context.Sessions.Add(session);
-			var result = await _context.SaveChangesAsync(ct) > 0;
+			var result = Session.Create(
+				request.Session.MentorId,
+				request.Session.StartTime,
+				DateTime.UtcNow,
+				request.Session.Duration
+			);
 
-			if (!result)
+			if (!result.IsSuccess)
+				return result.Map(_ => Guid.Empty);
+
+			Session session = result.Value!;
+
+			_context.Sessions.Add(session);
+			var saved = await _context.SaveChangesAsync(ct) > 0;
+
+			if (!saved)
 				return Result<Guid>.Failure("Failed to create session");
 
 			return Result<Guid>.Success(session.Id);

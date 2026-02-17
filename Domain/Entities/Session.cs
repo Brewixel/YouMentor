@@ -15,11 +15,8 @@ public class Session
 	public SessionStatus Status { get; private set; }
 	public uint Version { get; private set; }
 
-	public Session(Guid mentorId, DateTime startTime, TimeSpan duration)
+	private Session(Guid mentorId, DateTime startTime, TimeSpan duration)
 	{
-		if (startTime < DateTime.UtcNow)
-			throw new ArgumentException("You cannot create a session in the past.");
-
 		Id = Guid.NewGuid();
 		MentorId = mentorId;
 		StartTime = startTime;
@@ -27,7 +24,22 @@ public class Session
 		Status = SessionStatus.Free;
 	}
 
-	protected Session() { }
+	private Session() { }
+
+	public static Result<Session> Create(Guid mentorId, DateTime startTime, DateTime currentTime, TimeSpan duration)
+	{
+		if (startTime < currentTime)
+			return Result<Session>.Validation("You cannot create a session in the past.");
+
+		if (mentorId == Guid.Empty)
+			return Result<Session>.Validation("Incorrect mentor Id.");
+
+		if (duration <= TimeSpan.Zero)
+			return Result<Session>.Validation("Incorrect duration.");
+
+		return Result<Session>.Success(
+			new Session(mentorId, startTime, duration));
+	}
 
 	public Result Book(Guid studentId)
 	{

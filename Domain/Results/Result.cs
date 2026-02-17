@@ -80,4 +80,16 @@ public class Result<T> : Result
 			IsSuccess = false,
 			ErrorInfo = new ErrorInfo(ErrorType.Failure, message)
 		};
+
+	public Result<T2> Map<T2>(Func<T, T2> mapper)
+	{
+		if (!IsSuccess)
+			return new()
+			{
+				IsSuccess = false,
+				ErrorInfo = ErrorInfo
+			};
+
+		return Result<T2>.Success(mapper(Value!));
+	}
 }
