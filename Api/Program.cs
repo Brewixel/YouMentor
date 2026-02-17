@@ -1,4 +1,5 @@
 using Api.Endpoints;
+using Application.Behaviors;
 using Application.Core;
 using Application.Interfaces;
 using Application.Sessions;
@@ -23,8 +24,13 @@ internal class Program
 		builder.Services.AddSingleton<SessionMapper>();
 
 		builder.Services.AddOpenApi();
+
+		builder.Services.AddValidatorsFromAssembly(typeof(Book).Assembly);
 		builder.Services.AddMediatR(cfg =>
-			cfg.RegisterServicesFromAssembly(typeof(IAppDbContext).Assembly));
+		{
+			cfg.RegisterServicesFromAssembly(typeof(IAppDbContext).Assembly);
+			cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
+		});
 
 		var app = builder.Build();
 
