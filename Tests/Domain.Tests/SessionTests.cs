@@ -2,7 +2,7 @@ using Domain.Entities;
 using Domain.Results;
 using FluentAssertions;
 
-namespace Domain.UnitTests;
+namespace Domain.Tests;
 
 public class SessionTests
 {
@@ -40,7 +40,7 @@ public class SessionTests
 
 		// Assert
 		result.IsSuccess.Should().BeTrue();
-		result.Value.StartTime.Should().Be(now);
+		result.Value?.StartTime.Should().Be(now);
 	}
 
 	[Fact]
