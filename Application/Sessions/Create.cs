@@ -16,7 +16,7 @@ public class Create
 		public required CreateSessionDto Session { get; set; }
 	}
 
-	public class Handler(IAppDbContext _context) : IRequestHandler<Command, Result<Guid>>
+	public class Handler(IAppDbContext context) : IRequestHandler<Command, Result<Guid>>
 	{
 		public async Task<Result<Guid>> Handle(Command request, CancellationToken ct)
 		{
@@ -32,11 +32,8 @@ public class Create
 
 			Session session = result.Value!;
 
-			_context.Sessions.Add(session);
-			var saved = await _context.SaveChangesAsync(ct) > 0;
-
-			if (!saved)
-				return Result<Guid>.Failure("Failed to create session");
+			context.Sessions.Add(session);
+			await context.SaveChangesAsync(ct);
 
 			return Result<Guid>.Success(session.Id);
 		}

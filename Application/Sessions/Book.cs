@@ -10,19 +10,19 @@ public class Book
 {
 	public class Command : IRequest<Result>
 	{
-		public Guid SessionId { get; set; }
-		public Guid StudentId { get; set; }
+		public required Guid SessionId { get; set; }
+		public required Guid StudentId { get; set; }
 	}
 
 	public class Handler(IAppDbContext context, ILogger<Handler> logger) : IRequestHandler<Command, Result>
 	{
-		const int MaxRetries = 3;
+		public const int MaxRetries = 3;
 
 		public async Task<Result> Handle(Command request, CancellationToken ct)
 		{
 			var retries = 0;
 
-			while(retries < MaxRetries)
+			while(retries <= MaxRetries)
 			{
 				var session = await context.Sessions.FirstOrDefaultAsync(x => x.Id == request.SessionId, ct);
 				if (session == null)
@@ -35,11 +35,7 @@ public class Book
 
 				try
 				{
-					var changedRows = await context.SaveChangesAsync(ct);
-
-					if (changedRows == 0)
-						return Result.Failure($"Failed to update session");
-
+					await context.SaveChangesAsync(ct);
 					return Result.Success();
 				}
 				catch(DbUpdateConcurrencyException _)
