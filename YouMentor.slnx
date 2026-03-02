@@ -7,5 +7,5 @@
   <Project Path="Domain/Domain.csproj" />
   <Project Path="Infrastructure/Infrastructure.csproj" />
   <Project Path="Tests/Application.Tests/Application.Tests.csproj" Id="13548eeb-da3f-46e7-ac27-9353e20f0f7a" />
-  <Project Path="Tests/Domain.UnitTests/Domain.UnitTests.csproj" Id="51bc7ade-eb41-4cb9-a458-eb5facc72d07" />
+  <Project Path="Tests/Domain.Tests/Domain.Tests.csproj" Id="51bc7ade-eb41-4cb9-a458-eb5facc72d07" />
 </Solution>
