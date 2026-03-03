@@ -1,4 +1,5 @@
 using Api.Endpoints;
+using Api.ExceptionHandling;
 using Application.Behaviors;
 using Application.Core;
 using Application.Interfaces;
@@ -32,7 +33,12 @@ internal class Program
 			cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
 		});
 
+		builder.Services.AddProblemDetails();
+		builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+
 		var app = builder.Build();
+
+		app.UseExceptionHandler();
 
 		if (app.Environment.IsDevelopment())
 		{
