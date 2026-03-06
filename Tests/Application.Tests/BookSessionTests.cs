@@ -34,7 +34,7 @@ public class BookSessionTests : IntegrationTestBase
 		result.IsSuccess.Should().BeTrue(result.ErrorInfo?.Message);
 
 		var session = await GetSessionAsync(sessionId);
-		session.Status.Should().Be(SessionStatus.Booked);
+		session!.Status.Should().Be(SessionStatus.Booked);
 	}
 
 	[Fact]
@@ -74,7 +74,7 @@ public class BookSessionTests : IntegrationTestBase
 		result.ErrorInfo?.Type.Should().Be(ErrorType.Validation);
 
 		var session = await GetSessionAsync(sessionId);
-		session.Status.Should().Be(SessionStatus.Free);
+		session!.Status.Should().Be(SessionStatus.Free);
 		session.StudentId.Should().BeNull();
 	}
 
@@ -96,32 +96,17 @@ public class BookSessionTests : IntegrationTestBase
 		result2.IsSuccess.Should().BeFalse();
 		result2.ErrorInfo?.Type.Should().Be(ErrorType.Conflict);
 
-		var checkupContext = BuildContext();
-		var session = checkupContext.Sessions.First();
-		session.StudentId.Should().Be(setup1.Command.StudentId);
+		var session = await GetSessionAsync(sessionId);
+		session!.StudentId.Should().Be(setup1.Command.StudentId);
 	}
 
 	[Fact]
-	public async Task Handle_Should_RetryAndSave_When_RetriesCountLessThanMax()
+	public async Task Handle_Should_RetryAndSave_When_RetriesCountLessOrEqualThanMax()
 	{
 		// Arrange
 		var initTasks = Enumerable.Range(1, Book.Handler.MaxRetries)
 			.Select(
-				async num =>
-				{
-					var sessionId = await CreateSessionAsync();
-					var studentId = Guid.NewGuid();
-					return new ConcurentData
-					{
-						SessionId = sessionId,
-						StudentId = studentId,
-						Setup = BuildBookSetup(sessionId,
-							logger: new FakeLogger<Book.Handler>(),
-							contextInterceptors: [new ConcurrencyExceptionInterceptor(num)]
-						),
-						RetriesCount = num
-					};
-				}
+				async num => await BuildConcurentDataAsync(num)
 			);
 
 		var concurentDict = (await Task.WhenAll(initTasks))
@@ -144,11 +129,33 @@ public class BookSessionTests : IntegrationTestBase
 
 			result.IsSuccess.Should().BeTrue($"{result.ErrorInfo?.Message}. Retries count: {retriesCount}");
 			var session = await GetSessionAsync(sessionId);
-			session.Status.Should().Be(SessionStatus.Booked);
+			session!.Status.Should().Be(SessionStatus.Booked);
 
 			logger.Messages.Where(x => x.Contains("Concurrency conflict"))
 				.Should().HaveCount(retriesCount);
 		}
+	}
+
+	[Fact]
+	public async Task Handle_Should_ReturnFailure_When_RetriesCountMoreThanMax()
+	{
+		// Arrange
+		var retriesCount = Book.Handler.MaxRetries + 1;
+		var concurentData = await BuildConcurentDataAsync(retriesCount);
+
+		// Act
+		var setup = concurentData.Setup;
+		var result = await setup.Handler.Handle(setup.Command, CancellationToken.None);
+
+		// Assert
+		var sessionId = concurentData.SessionId;
+
+		result.IsSuccess.Should().BeFalse();
+		result.ErrorInfo!.Type.Should().Be(ErrorType.Failure);
+
+		var session = await GetSessionAsync(sessionId);
+		session!.Status.Should().Be(SessionStatus.Free);
+		session.StudentId.Should().BeNull();
 	}
 
 	private BookSetup BuildBookSetup(Guid sessionId,
@@ -177,6 +184,23 @@ public class BookSessionTests : IntegrationTestBase
 			Handler = handler,
 			Context = setupContext,
 			Logger = logger
+		};
+	}
+
+	private async Task<ConcurentData> BuildConcurentDataAsync(int retriesCount)
+	{
+		var sessionId = await CreateSessionAsync();
+		var studentId = Guid.NewGuid();
+
+		return new ConcurentData
+		{
+			SessionId = sessionId,
+			StudentId = studentId,
+			Setup = BuildBookSetup(sessionId,
+				logger: new FakeLogger<Book.Handler>(),
+				contextInterceptors: [new ConcurrencyExceptionInterceptor(retriesCount)]
+			),
+			RetriesCount = retriesCount
 		};
 	}
 
