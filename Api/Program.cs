@@ -1,5 +1,6 @@
 using Api.Endpoints;
 using Api.ExceptionHandling;
+using Api.Middlewares;
 using Application.Behaviors;
 using Application.Core;
 using Application.Interfaces;
@@ -37,6 +38,11 @@ internal class Program
 		builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 		var app = builder.Build();
+
+		if (app.Environment.IsDevelopment())
+		{
+			app.UseRequestTiming();
+		}
 
 		app.UseExceptionHandler();
 
