@@ -2,12 +2,7 @@ using Application.Sessions;
 using Domain.Entities;
 using Domain.Results;
 using FluentAssertions;
-using FluentAssertions.Equivalency;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging.Abstractions;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Application.Tests;
 
