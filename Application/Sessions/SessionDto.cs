@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Application.Sessions;
 
-public class SessionDto
+public record SessionDto
 {
 	public Guid Id { get; set; }
 	public Guid MentorId { get; set; }

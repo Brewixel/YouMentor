@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Application.Sessions;
 
-public class CreateSessionDto
+public record CreateSessionDto
 {
 	public Guid MentorId { get; set; }
 	public DateTime StartTime { get; set; }
