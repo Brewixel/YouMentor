@@ -24,7 +24,7 @@ jobs:
             echo "Expected format: <type>[optional scope]: <description>"
             exit 1
           fi
-          echo "✅ The commit message is written correctly!!"
+          echo "✅ The commit message is written correctly!!!!"
 
   run-tests:
     runs-on: ubuntu-latest
