@@ -1,0 +1,32 @@
+name: Semantic Release & PROD Deploy
+
+on:
+  push:
+    branches: [ "release" ]
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Semantic Release
+        uses: cycjimmy/semantic-release-action@v4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  deploy-prod:
+    needs: release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fake Deploy to PROD
+        run: |
+          echo "🔥 Starting deployment to PROD (Production)..."
+          echo "Sending production build to users."

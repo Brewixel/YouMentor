@@ -1,0 +1,16 @@
+name: Deploy to QA Environment
+
+on:
+  push:
+    branches: [ "qa" ]
+
+jobs:
+  deploy-qa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fake Deploy to QA
+        run: |
+          echo "🚀 Starting deployment to QA (Pre-production)..."
+          echo "Here usually run tests."
+          echo "✅ QA updated!"

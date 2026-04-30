@@ -1,0 +1,16 @@
+name: Deploy to DEV Environment
+
+on:
+  push:
+    branches: [ "dev" ]
+
+jobs:
+  deploy-dev:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fake Deploy to DEV
+        run: |
+          echo "🚀 Starting deployment to DEV (Test environment)..."
+          echo "Here will be building Docker image and sending to server."
+          echo "✅ DEV updated!"
