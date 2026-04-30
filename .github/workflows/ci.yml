@@ -6,7 +6,27 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
+  lint-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Check Conventional Commits format
+        run: |
+          COMMIT_MSG=$(git log -1 --pretty=format:"%s")
+          REGEX="^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\([a-zA-Z0-9_-]+\))?: .+"
+
+          if [[ ! $COMMIT_MSG =~ $REGEX ]]; then
+            echo "❌ Error: The commit message does not conform to the Conventional Commits format!"
+            echo "Your commit: '$COMMIT_MSG'"
+            echo "Expected format: <type>[optional scope]: <description>"
+            exit 1
+          fi
+          echo "✅ The commit message is written correctly!"
+
+  run-tests:
     runs-on: ubuntu-latest
 
     steps:
