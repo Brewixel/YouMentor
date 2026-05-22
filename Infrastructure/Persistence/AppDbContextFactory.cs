@@ -25,7 +25,8 @@ public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
 			throw new InvalidOperationException($"Connection string 'DefaultConnection' not found. Searched in: {basePath} and ../Api/");
 		}
 
-		builder.UseNpgsql(connectionString);
+		builder.UseNpgsql(connectionString)
+			.UseSnakeCaseNamingConvention();
 
 		return new AppDbContext(builder.Options);
 	}
