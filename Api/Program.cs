@@ -19,7 +19,8 @@ internal class Program
 
 		var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 		builder.Services.AddDbContext<AppDbContext>(options =>
-			options.UseNpgsql(connectionString));
+			options.UseNpgsql(connectionString)
+				.UseSnakeCaseNamingConvention());
 		builder.Services.AddScoped<IAppDbContext>(provider =>
 			provider.GetRequiredService<AppDbContext>());
 
