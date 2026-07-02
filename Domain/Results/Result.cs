@@ -40,6 +40,20 @@ public class Result()
 			IsSuccess = false,
 			ErrorInfo = new ErrorInfo(ErrorType.Failure, message)
 		};
+
+	public static Result Unauthorized()
+		=> new()
+		{
+			IsSuccess = false,
+			ErrorInfo = new ErrorInfo(ErrorType.Unauthorized, string.Empty)
+		};
+
+	public static Result Forbidden()
+		=> new()
+		{
+			IsSuccess = false,
+			ErrorInfo = new ErrorInfo(ErrorType.Forbidden, string.Empty)
+		};
 }
 
 public class Result<T> : Result
@@ -79,6 +93,21 @@ public class Result<T> : Result
 		{
 			IsSuccess = false,
 			ErrorInfo = new ErrorInfo(ErrorType.Failure, message)
+		};
+
+
+	public static new Result<T> Unauthorized()
+		=> new()
+		{
+			IsSuccess = false,
+			ErrorInfo = new ErrorInfo(ErrorType.Unauthorized, string.Empty)
+		};
+
+	public static new Result<T> Forbidden()
+		=> new()
+		{
+			IsSuccess = false,
+			ErrorInfo = new ErrorInfo(ErrorType.Forbidden, string.Empty)
 		};
 
 	public Result<T2> Map<T2>(Func<T, T2> mapper)

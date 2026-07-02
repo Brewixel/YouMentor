@@ -16,12 +16,18 @@ public class Create
 		public required CreateSessionDto Session { get; set; }
 	}
 
-	public class Handler(IAppDbContext context) : IRequestHandler<Command, Result<Guid>>
+	public class Handler(
+		IAppDbContext context,
+		ICurrentUser currentUser) : IRequestHandler<Command, Result<Guid>>
 	{
 		public async Task<Result<Guid>> Handle(Command request, CancellationToken ct)
 		{
+			var mentorId = currentUser.UserId;
+			if (mentorId == null)
+				return Result<Guid>.Unauthorized();
+
 			var result = Session.Create(
-				request.Session.MentorId,
+				mentorId.Value,
 				request.Session.StartTime,
 				DateTime.UtcNow,
 				request.Session.Duration

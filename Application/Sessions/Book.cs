@@ -11,15 +11,21 @@ public class Book
 	public class Command : IRequest<Result>
 	{
 		public required Guid SessionId { get; set; }
-		public required Guid StudentId { get; set; }
 	}
 
-	public class Handler(IAppDbContext context, ILogger<Handler> logger) : IRequestHandler<Command, Result>
+	public class Handler(
+		IAppDbContext context,
+		ICurrentUser currentUser,
+		ILogger<Handler> logger) : IRequestHandler<Command, Result>
 	{
 		public const int MaxRetries = 3;
 
 		public async Task<Result> Handle(Command request, CancellationToken ct)
 		{
+			var studentId = currentUser.UserId;
+			if (studentId == null)
+				return Result.Unauthorized();
+
 			var retries = 0;
 
 			while(retries <= MaxRetries)
@@ -28,7 +34,7 @@ public class Book
 				if (session == null)
 					return Result.NotFound($"Session with id {request.SessionId} not found");
 
-				var bookingResult = session.Book(request.StudentId);
+				var bookingResult = session.Book(studentId.Value);
 
 				if (!bookingResult.IsSuccess)
 					return bookingResult;
@@ -41,7 +47,7 @@ public class Book
 				catch(DbUpdateConcurrencyException _)
 				{
 					logger.LogWarning("Concurrency conflict detected while booking session {SessionId} for student {StudentId}. Retrying...",
-						request.SessionId, request.StudentId);
+						request.SessionId, studentId.Value);
 
 					context.ChangeTracker.Clear();
 					retries++;

@@ -10,4 +10,6 @@ public enum ErrorType
 	NotFound,
 	Conflict,
 	Failure,
+	Unauthorized,
+	Forbidden,
 }

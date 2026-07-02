@@ -1,3 +1,4 @@
+using Api.Auth;
 using Api.Extensions;
 using Application.Sessions;
 using MediatR;
@@ -10,12 +11,14 @@ public static class SessionsEndpoints
 {
 	public static void MapSessionsEndpoints(this IEndpointRouteBuilder app)
 	{
-		var group = app.MapGroup("api/sessions");
-		group.MapPost("/", CreateSession);
+		var group = app.MapGroup("api/sessions")
+			.RequireAuthorization();
+
+		group.MapPost("/", CreateSession).RequireAuthorization(Policies.MentorOnly);
 		group.MapGet("/", GetAllSessions);
 		group.MapGet("/free", GetFreeSessions);
 		group.MapGet("/by-mentor/{mentorId:guid}", GetMentorSessions);
-		group.MapPost("/book", BookSession);
+		group.MapPost("/book", BookSession).RequireAuthorization(Policies.StudentOnly);
 	}
 
 	private static async Task<IResult> CreateSession(
@@ -24,7 +27,8 @@ public static class SessionsEndpoints
 		[FromBody] CreateSessionDto session)
 	{
 		var result = await mediator.Send(
-			new Create.Command { Session = session });
+			new Create.Command { Session = session },
+			ct);
 		return result.ToHttpResult();
 	}
 

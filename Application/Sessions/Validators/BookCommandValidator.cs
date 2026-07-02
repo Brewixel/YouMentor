@@ -11,8 +11,5 @@ public class BookCommandValidator : AbstractValidator<Book.Command>
 	{
 		RuleFor(x => x.SessionId)
 			.NotEmpty();
-
-		RuleFor(x => x.StudentId)
-			.NotEmpty();
 	}
 }

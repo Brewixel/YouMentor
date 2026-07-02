@@ -27,6 +27,8 @@ public static class ResultExtensions
 			ErrorType.Validation => TypedResults.BadRequest(errorInfo.Message),
 			ErrorType.NotFound => TypedResults.NotFound(errorInfo.Message),
 			ErrorType.Conflict => TypedResults.Conflict(errorInfo.Message),
+			ErrorType.Unauthorized => TypedResults.Unauthorized(),
+			ErrorType.Forbidden => TypedResults.Forbid(),
 			_ => TypedResults.Problem // Для Failure и остальных
 			(
 				errorInfo.Message,
