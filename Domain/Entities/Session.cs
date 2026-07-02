@@ -54,4 +54,13 @@ public class Session
 
 		return Result.Success();
 	}
+
+	public Result Cancel()
+	{
+		if (Status == SessionStatus.Canceled)
+			return Result.Conflict("This session is already cancelled.");
+
+		Status = SessionStatus.Canceled;
+		return Result.Success();
+	}
 }

@@ -19,6 +19,7 @@ public static class SessionsEndpoints
 		group.MapGet("/free", GetFreeSessions);
 		group.MapGet("/by-mentor/{mentorId:guid}", GetMentorSessions);
 		group.MapPost("/book", BookSession).RequireAuthorization(Policies.StudentOnly);
+		group.MapPost("/cancel", CancelSession).RequireAuthorization(Policies.MentorOnly);
 	}
 
 	private static async Task<IResult> CreateSession(
@@ -65,6 +66,15 @@ public static class SessionsEndpoints
 		ISender mediator,
 		CancellationToken ct,
 		[FromBody] Book.Command command)
+	{
+		var result = await mediator.Send(command, ct);
+		return result.ToHttpResult();
+	}
+
+	private static async Task<IResult> CancelSession(
+		ISender mediator,
+		CancellationToken ct,
+		[FromBody] Cancel.Command command)
 	{
 		var result = await mediator.Send(command, ct);
 		return result.ToHttpResult();

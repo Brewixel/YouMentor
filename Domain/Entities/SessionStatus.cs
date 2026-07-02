@@ -9,5 +9,7 @@ public enum SessionStatus
 	Free,
 	Booked,
 	Completed,
-	Canceled
+	Canceled,
+	Pending,
+	Confirmed
 }
