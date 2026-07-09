@@ -29,6 +29,8 @@ internal class Program
 
 		builder.Services.AddSingleton<SessionMapper>();
 
+		builder.Services.AddSingleton<TimeProvider>(TimeProvider.System);
+
 		builder.Services.AddOpenApi();
 
 		builder.Services.AddValidatorsFromAssembly(typeof(Book).Assembly);

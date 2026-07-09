@@ -18,7 +18,8 @@ public class Create
 
 	public class Handler(
 		IAppDbContext context,
-		ICurrentUser currentUser) : IRequestHandler<Command, Result<Guid>>
+		ICurrentUser currentUser,
+		TimeProvider timeProvider) : IRequestHandler<Command, Result<Guid>>
 	{
 		public async Task<Result<Guid>> Handle(Command request, CancellationToken ct)
 		{
@@ -26,10 +27,11 @@ public class Create
 			if (mentorId == null)
 				return Result<Guid>.Unauthorized();
 
+			var currentTime = timeProvider.GetUtcNow();
 			var result = Session.Create(
+				currentTime,
 				mentorId.Value,
 				request.Session.StartTime,
-				DateTime.UtcNow,
 				request.Session.Duration
 			);
 

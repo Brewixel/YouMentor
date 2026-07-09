@@ -9,27 +9,27 @@ public class Session
 	public Guid MentorId { get; private set; }
 	public Guid? StudentId { get; private set; }
 
-	public DateTime StartTime { get; private set; }
+	public DateTimeOffset StartTime { get; private set; }
 	public TimeSpan Duration { get; private set; }
 
 	public SessionStatus Status { get; private set; }
 	public uint Version { get; private set; }
 
-	private Session(Guid mentorId, DateTime startTime, TimeSpan duration)
+	private Session(Guid mentorId, DateTimeOffset startTime, TimeSpan duration)
 	{
 		Id = Guid.NewGuid();
 		MentorId = mentorId;
-		StartTime = startTime;
+		StartTime = startTime.ToUniversalTime();
 		Duration = duration;
 		Status = SessionStatus.Free;
 	}
 
 	private Session() { }
 
-	public static Result<Session> Create(Guid mentorId, DateTime startTime, DateTime currentTime, TimeSpan duration)
+	public static Result<Session> Create(DateTimeOffset currentTime, Guid mentorId, DateTimeOffset startTime, TimeSpan duration)
 	{
-		if (startTime < currentTime)
-			return Result<Session>.Validation("You cannot create a session in the past.");
+		if (startTime <= currentTime)
+			return Result<Session>.Validation("The session must start in the future.");
 
 		if (mentorId == Guid.Empty)
 			return Result<Session>.Validation("Incorrect mentor Id.");
@@ -41,10 +41,13 @@ public class Session
 			new Session(mentorId, startTime, duration));
 	}
 
-	public Result Book(Guid studentId)
+	public Result Book(DateTimeOffset currentTime, Guid studentId)
 	{
 		if (Status != SessionStatus.Free)
 			return Result.Conflict("This slot is already taken or cancelled.");
+
+		if (StartTime <= currentTime)
+			return Result.Conflict("Session cannot be booked.");
 
 		if (studentId == Guid.Empty)
 			return Result.Validation("Incorrect student Id.");
@@ -55,10 +58,14 @@ public class Session
 		return Result.Success();
 	}
 
-	public Result Cancel()
+	public Result Cancel(DateTimeOffset currentTime)
 	{
-		if (Status == SessionStatus.Canceled)
-			return Result.Conflict("This session is already cancelled.");
+		if (Status is not (SessionStatus.Free
+							or SessionStatus.Booked))
+			return Result.Conflict($"Session with status '{Status}' cannot be cancelled.");
+
+		if (StartTime <= currentTime)
+			return Result.Conflict("Session cannot be cancelled after it has started.");
 
 		Status = SessionStatus.Canceled;
 		return Result.Success();

@@ -16,7 +16,8 @@ public class Book
 	public class Handler(
 		IAppDbContext context,
 		ICurrentUser currentUser,
-		ILogger<Handler> logger) : IRequestHandler<Command, Result>
+		ILogger<Handler> logger,
+		TimeProvider timeProvider) : IRequestHandler<Command, Result>
 	{
 		public const int MaxRetries = 3;
 
@@ -34,7 +35,8 @@ public class Book
 				if (session == null)
 					return Result.NotFound($"Session with id {request.SessionId} not found");
 
-				var bookingResult = session.Book(studentId.Value);
+				var currentTime = timeProvider.GetUtcNow();
+				var bookingResult = session.Book(currentTime, studentId.Value);
 
 				if (!bookingResult.IsSuccess)
 					return bookingResult;

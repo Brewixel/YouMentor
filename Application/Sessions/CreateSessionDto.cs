@@ -6,6 +6,6 @@ namespace Application.Sessions;
 
 public record CreateSessionDto
 {
-	public DateTime StartTime { get; set; }
+	public DateTimeOffset StartTime { get; set; }
 	public TimeSpan Duration { get; set; }
 }

@@ -15,7 +15,8 @@ public class Cancel
 
 	public class Handler(
 		IAppDbContext context,
-		ICurrentUser currentUser) : IRequestHandler<Command, Result>
+		ICurrentUser currentUser,
+		TimeProvider timeProvider) : IRequestHandler<Command, Result>
 	{
 		public async Task<Result> Handle(Command request, CancellationToken ct)
 		{
@@ -31,7 +32,8 @@ public class Cancel
 			if (session.MentorId != mentorId)
 				return Result.Forbidden();
 
-			var cancelingResult = session.Cancel();
+			var currentTime = timeProvider.GetUtcNow();
+			var cancelingResult = session.Cancel(currentTime);
 			if (!cancelingResult.IsSuccess)
 				return cancelingResult;
 
