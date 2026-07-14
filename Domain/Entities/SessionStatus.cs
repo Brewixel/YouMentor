@@ -6,8 +6,7 @@ namespace Domain.Entities;
 
 public enum SessionStatus
 {
-	Free,
-	Booked,
-	Completed,
-	Canceled
+	Free = 0,
+	Booked = 1,
+	Canceled = 2
 }
