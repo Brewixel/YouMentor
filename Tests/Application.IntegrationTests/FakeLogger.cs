@@ -1,9 +1,6 @@
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace Application.Tests;
+namespace Application.IntegrationTests;
 
 public class FakeLogger<T> : ILogger<T>
 {

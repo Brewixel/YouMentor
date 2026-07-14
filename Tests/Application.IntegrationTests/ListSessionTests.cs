@@ -4,7 +4,7 @@ using Domain.Results;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 
-namespace Application.Tests;
+namespace Application.IntegrationTests;
 
 public class ListSessionTests : IntegrationTestBase
 {
@@ -36,7 +36,7 @@ public class ListSessionTests : IntegrationTestBase
 		// Arrange
 		var sessions = await SeedSessionsAsync();
 		var mentorId = sessions[0].MentorId;
-		var mentorSessions = sessions.Where(x => x.MentorId == mentorId);
+		var mentorSessions = sessions.Where(x => x.MentorId == mentorId).ToList();
 		var query = new List.Query()
 		{
 			MentorId = mentorId,
@@ -59,7 +59,7 @@ public class ListSessionTests : IntegrationTestBase
 	{
 		// Arrange
 		var sessions = await SeedSessionsAsync();
-		var freeSessions = sessions.Where(x => x.Status == SessionStatus.Free);
+		var freeSessions = sessions.Where(x => x.Status == SessionStatus.Free).ToList();
 		var query = new List.Query()
 		{
 			MentorId = null,
@@ -84,7 +84,7 @@ public class ListSessionTests : IntegrationTestBase
 		var sessions = await SeedSessionsAsync();
 		var mentorId = sessions[0].MentorId;
 		var freeMentorSessions = sessions.Where(x =>
-			x.Status == SessionStatus.Free && x.MentorId == mentorId);
+			x.Status == SessionStatus.Free && x.MentorId == mentorId).ToList();
 
 		var query = new List.Query()
 		{
@@ -107,7 +107,7 @@ public class ListSessionTests : IntegrationTestBase
 	{
 		Guid mentorId1 = Guid.NewGuid();
 		Guid mentorId2 = Guid.NewGuid();
-		var startDate = DateTime.UtcNow.AddDays(1);
+		var startTime = DefaultTime.AddDays(1);
 		var duration = TimeSpan.FromDays(1);
 
 		var sessions = new List<SessionDto>
@@ -118,7 +118,7 @@ public class ListSessionTests : IntegrationTestBase
 				Id = Guid.NewGuid(),
 				MentorId = mentorId1,
 				StudentId = null,
-				StartTime = startDate,
+				StartTime = startTime,
 				Duration = duration,
 				Status = SessionStatus.Free
 			},
@@ -127,7 +127,7 @@ public class ListSessionTests : IntegrationTestBase
 				Id = Guid.NewGuid(),
 				MentorId = mentorId1,
 				StudentId = null,
-				StartTime = startDate,
+				StartTime = startTime,
 				Duration = duration,
 				Status = SessionStatus.Free
 			},
@@ -136,7 +136,7 @@ public class ListSessionTests : IntegrationTestBase
 				Id = Guid.NewGuid(),
 				MentorId = mentorId1,
 				StudentId = Guid.NewGuid(),
-				StartTime = startDate,
+				StartTime = startTime,
 				Duration = duration,
 				Status = SessionStatus.Booked
 			},
@@ -147,7 +147,7 @@ public class ListSessionTests : IntegrationTestBase
 				Id = Guid.NewGuid(),
 				MentorId = mentorId2,
 				StudentId = null,
-				StartTime = startDate,
+				StartTime = startTime,
 				Duration = duration,
 				Status = SessionStatus.Free
 			}
@@ -184,7 +184,7 @@ public class ListSessionTests : IntegrationTestBase
 		}
 
 		var sql = $@"
-        INSERT INTO ""Sessions"" (""Id"", ""MentorId"", ""StudentId"", ""StartTime"", ""Duration"", ""Status"") 
+        INSERT INTO ""sessions"" (""id"", ""mentor_id"", ""student_id"", ""start_time"", ""duration"", ""status"")
         VALUES {string.Join(", ", valueTuples)}";
 
 		await context.Database.ExecuteSqlRawAsync(sql, parameters.ToArray());
@@ -195,8 +195,8 @@ public class ListSessionTests : IntegrationTestBase
 		result.IsSuccess.Should().BeTrue(result.ErrorInfo?.Message);
 		result.Value.Should().NotBeNull();
 		result.Value.Should().BeEquivalentTo(expected, options => options
-			.Using<DateTime>(ctx => ctx.Subject.Should().BeCloseTo(ctx.Expectation, TimeSpan.FromMilliseconds(1)))
-			.WhenTypeIs<DateTime>()
+			.Using<DateTimeOffset>(ctx => ctx.Subject.Should().BeCloseTo(ctx.Expectation, TimeSpan.FromMilliseconds(1)))
+			.WhenTypeIs<DateTimeOffset>()
 		);
 	}
 }

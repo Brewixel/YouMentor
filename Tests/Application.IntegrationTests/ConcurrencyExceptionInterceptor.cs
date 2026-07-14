@@ -1,10 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace Application.Tests;
+namespace Application.IntegrationTests;
 
 public class ConcurrencyExceptionInterceptor(int maxExceptionsCount) : SaveChangesInterceptor
 {

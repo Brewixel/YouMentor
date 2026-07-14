@@ -30,6 +30,7 @@ public class CancelTests : TestBase
 		var session = CreateSession(currentTime, tomorrow);
 		var studentId = Guid.NewGuid();
 		session.Book(currentTime, studentId);
+		session.Status.Should().Be(SessionStatus.Booked);
 		session.StudentId.Should().Be(studentId);
 
 		// Act

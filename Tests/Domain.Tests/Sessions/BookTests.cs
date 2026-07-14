@@ -32,6 +32,7 @@ public class BookTests : TestBase
 		var session = CreateSession(currentTime, tomorrow);
 		var firstStudent = Guid.NewGuid();
 		session.Book(currentTime, firstStudent);
+		session.Status.Should().Be(SessionStatus.Booked);
 
 		// Act
 		var secondStudent = Guid.NewGuid();
@@ -41,6 +42,7 @@ public class BookTests : TestBase
 		result.IsSuccess.Should().BeFalse();
 		result.ErrorInfo?.Type.Should().Be(Results.ErrorType.Conflict);
 		session.StudentId.Should().Be(firstStudent);
+		session.Status.Should().Be(SessionStatus.Booked);
 	}
 
 	[Fact]
@@ -51,6 +53,7 @@ public class BookTests : TestBase
 		var tomorrow = currentTime.AddDays(1);
 		var session = CreateSession(currentTime, tomorrow);
 		session.Cancel(currentTime);
+		session.Status.Should().Be(SessionStatus.Canceled);
 
 		// Act
 		var student = Guid.NewGuid();
@@ -59,7 +62,7 @@ public class BookTests : TestBase
 		// Assert
 		result.IsSuccess.Should().BeFalse();
 		result.ErrorInfo?.Type.Should().Be(Results.ErrorType.Conflict);
-		session.StudentId.Should().NotBe(student);
+		session.StudentId.Should().BeNull();
 		session.Status.Should().Be(SessionStatus.Canceled);
 	}
 
@@ -78,7 +81,7 @@ public class BookTests : TestBase
 		// Assert
 		result.IsSuccess.Should().BeFalse();
 		result.ErrorInfo?.Type.Should().Be(Results.ErrorType.Conflict);
-		session.StudentId.Should().NotBe(student);
+		session.StudentId.Should().BeNull();
 		session.Status.Should().Be(SessionStatus.Free);
 	}
 
@@ -98,7 +101,7 @@ public class BookTests : TestBase
 		// Assert
 		result.IsSuccess.Should().BeFalse();
 		result.ErrorInfo?.Type.Should().Be(Results.ErrorType.Conflict);
-		session.StudentId.Should().NotBe(student);
+		session.StudentId.Should().BeNull();
 		session.Status.Should().Be(SessionStatus.Free);
 	}
 
@@ -107,12 +110,12 @@ public class BookTests : TestBase
 	{
 		// Arrange
 		var studentId = Guid.Empty;
-		var now = GetCurrentTime();
-		var tomorrow = now.AddDays(1);
-		var session = CreateSession(now, tomorrow);
+		var currentTime = GetCurrentTime();
+		var tomorrow = currentTime.AddDays(1);
+		var session = CreateSession(currentTime, tomorrow);
 
 		// Act
-		var result = session.Book(now, studentId);
+		var result = session.Book(currentTime, studentId);
 
 		// Assert
 		result.IsSuccess.Should().BeFalse();
