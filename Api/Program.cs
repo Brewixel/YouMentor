@@ -12,6 +12,8 @@ using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Polly;
+using Polly.Retry;
 using Scalar.AspNetCore;
 
 internal class Program
@@ -71,6 +73,20 @@ internal class Program
 		});
 		builder.Services.AddHttpContextAccessor();
 		builder.Services.AddScoped<ICurrentUser, CurrentUser>();
+
+		builder.Services.AddResiliencePipeline(
+			Consts.PipelineNames.DatabaseConcurrency,
+			pipelineBuilder => pipelineBuilder
+				.AddRetry(new RetryStrategyOptions
+				{
+					ShouldHandle = new PredicateBuilder()
+						.Handle<DbUpdateConcurrencyException>(),
+					MaxRetryAttempts = Consts.PipelineProps.MaxRetryAttempts,
+					Delay =  TimeSpan.FromMilliseconds(25),
+					BackoffType = DelayBackoffType.Exponential,
+					UseJitter =  true,
+				})
+		);
 
 		var app = builder.Build();
 

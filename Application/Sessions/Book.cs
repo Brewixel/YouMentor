@@ -1,8 +1,11 @@
+using Application.Core;
 using Application.Interfaces;
 using Domain.Results;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Polly;
 
 namespace Application.Sessions;
 
@@ -10,56 +13,69 @@ public class Book
 {
 	public class Command : IRequest<Result>
 	{
-		public required Guid SessionId { get; set; }
+		public required Guid SessionId { get; init; }
 	}
 
 	public class Handler(
 		IAppDbContext context,
 		ICurrentUser currentUser,
 		ILogger<Handler> logger,
-		TimeProvider timeProvider) : IRequestHandler<Command, Result>
+		TimeProvider timeProvider,
+		[FromKeyedServices(Consts.PipelineNames.DatabaseConcurrency)]
+			ResiliencePipeline concurrencyPipeline
+		) : IRequestHandler<Command, Result>
 	{
-		public const int MaxRetries = 3;
-
 		public async Task<Result> Handle(Command request, CancellationToken ct)
 		{
 			var studentId = currentUser.UserId;
 			if (studentId == null)
 				return Result.Unauthorized();
 
-			var retries = 0;
-
-			while(retries <= MaxRetries)
+			try
 			{
-				var session = await context.Sessions.FirstOrDefaultAsync(x => x.Id == request.SessionId, ct);
-				if (session == null)
-					return Result.NotFound($"Session with id {request.SessionId} not found");
+				return await concurrencyPipeline.ExecuteAsync(
+					async pipelineCancellationToken =>
+					{
+						var session = await context.Sessions.FirstOrDefaultAsync(
+							x => x.Id == request.SessionId,
+							pipelineCancellationToken);
 
-				var currentTime = timeProvider.GetUtcNow();
-				var bookingResult = session.Book(currentTime, studentId.Value);
+						if (session == null)
+							return Result.NotFound($"Session with id {request.SessionId} not found");
 
-				if (!bookingResult.IsSuccess)
-					return bookingResult;
+						var currentTime = timeProvider.GetUtcNow();
+						var bookingResult = session.Book(currentTime, studentId.Value);
 
-				try
-				{
-					await context.SaveChangesAsync(ct);
-					return Result.Success();
-				}
-				catch(DbUpdateConcurrencyException _)
-				{
-					logger.LogWarning("Concurrency conflict detected while booking session {SessionId} for student {StudentId}. Retrying...",
-						request.SessionId, studentId.Value);
+						if (!bookingResult.IsSuccess)
+							return bookingResult;
 
-					context.ChangeTracker.Clear();
-					retries++;
-
-					var delay = Random.Shared.Next(1, 6) * 10;
-					await Task.Delay(delay, ct);
-				}
+						try
+						{
+							await context.SaveChangesAsync(pipelineCancellationToken);
+							return Result.Success();
+						}
+						catch (DbUpdateConcurrencyException)
+						{
+							context.ChangeTracker.Clear();
+							throw;
+						}
+					},
+					ct
+				);
 			}
+			catch (DbUpdateConcurrencyException exception)
+			{
+				logger.LogWarning(
+					exception,
+					"Unable to book session {SessionId} for student {StudentId} " +
+					"after {MaxRetries} retries",
+					request.SessionId,
+					studentId.Value,
+					Consts.PipelineProps.MaxRetryAttempts);
 
-			return Result.Failure("Unable to book session, please try again later");
+				return Result.Failure(
+					"Unable to book session, please try again later");
+			}
 		}
 	}
 }
