@@ -82,9 +82,7 @@ internal class Program
 					ShouldHandle = new PredicateBuilder()
 						.Handle<DbUpdateConcurrencyException>(),
 					MaxRetryAttempts = Consts.PipelineProps.MaxRetryAttempts,
-					Delay =  TimeSpan.FromMilliseconds(25),
-					BackoffType = DelayBackoffType.Exponential,
-					UseJitter =  true,
+					Delay =  TimeSpan.FromMilliseconds(25)
 				})
 		);
 

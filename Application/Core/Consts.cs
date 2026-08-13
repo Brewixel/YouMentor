@@ -9,6 +9,6 @@ public static class Consts
 
 	public static class PipelineProps
 	{
-		public const int MaxRetryAttempts = 3;
+		public const int MaxRetryAttempts = 2;
 	}
 }
