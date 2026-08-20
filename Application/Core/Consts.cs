@@ -2,13 +2,13 @@
 
 public static class Consts
 {
-	public static class PipelineNames
+	public static class Pipelines
 	{
-		public const string DatabaseConcurrency = "database-concurrency";
-	}
-
-	public static class PipelineProps
-	{
-		public const int MaxRetryAttempts = 2;
+		public static class DatabaseConcurrency
+		{
+			public const string Name = "database-concurrency";
+			public const int MaxRetryAttempts = 2;
+			public const int DelayMilliseconds = 25;
+		}
 	}
 }

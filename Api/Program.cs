@@ -8,12 +8,10 @@ using Application.Interfaces;
 using Application.Sessions;
 using FluentValidation;
 using Infrastructure.Persistence;
-using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Polly;
-using Polly.Retry;
 using Scalar.AspNetCore;
 
 internal class Program
@@ -75,15 +73,9 @@ internal class Program
 		builder.Services.AddScoped<ICurrentUser, CurrentUser>();
 
 		builder.Services.AddResiliencePipeline(
-			Consts.PipelineNames.DatabaseConcurrency,
-			pipelineBuilder => pipelineBuilder
-				.AddRetry(new RetryStrategyOptions
-				{
-					ShouldHandle = new PredicateBuilder()
-						.Handle<DbUpdateConcurrencyException>(),
-					MaxRetryAttempts = Consts.PipelineProps.MaxRetryAttempts,
-					Delay =  TimeSpan.FromMilliseconds(25)
-				})
+			Consts.Pipelines.DatabaseConcurrency.Name,
+			pipelineBuilder => pipelineBuilder.AddDatabaseConcurrencyRetry(
+				Consts.Pipelines.DatabaseConcurrency.DelayMilliseconds)
 		);
 
 		var app = builder.Build();

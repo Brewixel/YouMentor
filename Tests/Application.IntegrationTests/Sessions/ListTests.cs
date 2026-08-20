@@ -1,12 +1,13 @@
+using Application.IntegrationTests.Infrastructure;
 using Application.Sessions;
 using Domain.Entities;
 using Domain.Results;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 
-namespace Application.IntegrationTests;
+namespace Application.IntegrationTests.Sessions;
 
-public class ListSessionTests : IntegrationTestBase
+public class ListTests : IntegrationTestBase
 {
 	[Fact]
 	public async Task Handle_Should_ReturnAllSessions_When_NoFilters()

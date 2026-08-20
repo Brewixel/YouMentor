@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 
-namespace Application.IntegrationTests;
+namespace Application.IntegrationTests.Infrastructure;
 
 public class FakeLogger<T> : ILogger<T>
 {

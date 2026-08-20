@@ -1,13 +1,14 @@
+using Application.IntegrationTests.Infrastructure;
 using Application.Sessions;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 
-namespace Application.IntegrationTests;
+namespace Application.IntegrationTests.Sessions;
 
-public class CreateSessionTests : IntegrationTestBase
+public class CreateTests : IntegrationTestBase
 {
 	[Fact]
-	public async Task Handle_Should_CreateSession_And_SaveToDatabase()
+	public async Task Should_CreateSession_And_SaveToDatabase()
 	{
 		// Arrange
 		var mentorUser = GetFakeUser();
@@ -38,7 +39,7 @@ public class CreateSessionTests : IntegrationTestBase
 	}
 
 	[Fact]
-	public async Task Handle_Should_ReturnUnauthorized_When_MentorUserIsNull()
+	public async Task Should_ReturnUnauthorized_When_MentorUserIsNull()
 	{
 		// Arrange
 		var unauthorizedMentor = GetUnauthorizedUser();
@@ -62,7 +63,7 @@ public class CreateSessionTests : IntegrationTestBase
 	}
 
 	[Fact]
-	public async Task Handle_Should_NotSave_When_DomainValidationFails()
+	public async Task Should_NotSave_When_DomainValidationFails()
 	{
 		// Arrange
 		var emptyMentor = GetFakeUser(Guid.Empty); // triggers validation error

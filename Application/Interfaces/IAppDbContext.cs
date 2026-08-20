@@ -10,8 +10,8 @@ namespace Application.Interfaces;
 public interface IAppDbContext
 {
 	DbSet<Session> Sessions { get; }
-	//DbSet<Job> Jobs { get; }
+
+	ChangeTracker ChangeTracker { get; }
 
 	Task<int> SaveChangesAsync(CancellationToken cancellationToken);
-	ChangeTracker ChangeTracker { get; }
 }

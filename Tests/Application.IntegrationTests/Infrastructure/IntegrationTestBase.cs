@@ -1,17 +1,18 @@
-using Application.Sessions;
+using Application.Core;
 using Domain.Entities;
 using FluentAssertions;
 using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Time.Testing;
+using Polly;
 using Testcontainers.PostgreSql;
 
-namespace Application.IntegrationTests;
+namespace Application.IntegrationTests.Infrastructure;
 
 public class IntegrationTestBase : IAsyncLifetime
 {
-	public string ConnectionString { get; set; } = null!;
+	private string ConnectionString { get; set; } = null!;
 
 	protected static readonly DateTimeOffset DefaultTime = new (
 		2026, 7, 20,
@@ -101,15 +102,53 @@ public class IntegrationTestBase : IAsyncLifetime
 		return session.Id;
 	}
 
-	protected async Task CheckSessionPersisted(Guid sessionId, SessionStatus status = SessionStatus.Free, DateTimeOffset? startTime = null)
+	protected async Task BookSessionAsync(Guid sessionId, FakeTimeProvider timeProvider, FakeCurrentUser studentUser,
+		CancellationToken ct)
 	{
-		await using var context = BuildContext();
-		var session = await context.Sessions.FirstOrDefaultAsync(x => x.Id == sessionId);
+		await using var concurrentContext = BuildContext();
+		var session = await  concurrentContext.Sessions.FirstOrDefaultAsync(x => x.Id == sessionId, ct);
+		if (session == null)
+		{
+			throw new InvalidOperationException($"Session with id {sessionId} not found");
+		}
 
-		session.Should().NotBeNull();
-		session.Status.Should().Be(status);
+		var bookingResult = session.Book(timeProvider.GetUtcNow(), studentUser.UserId!.Value);
+		if (!bookingResult.IsSuccess)
+		{
+			throw new InvalidOperationException(
+				$"Concurrent booking failed: {bookingResult.ErrorInfo?.Message}");
+		}
 
-		if (startTime.HasValue)
-			session.StartTime.Should().BeCloseTo(startTime.Value, TimeSpan.FromMilliseconds(1));
+		await concurrentContext.SaveChangesAsync(ct);
+	}
+
+	protected async Task CancelSessionAsync(Guid sessionId, FakeTimeProvider timeProvider, CancellationToken ct)
+	{
+		await using var concurrentContext = BuildContext();
+		var session = await  concurrentContext.Sessions.FirstOrDefaultAsync(x => x.Id == sessionId, ct);
+		if (session == null)
+		{
+			throw new InvalidOperationException($"Session with id {sessionId} not found");
+		}
+
+		var cancellingResult = session.Cancel(timeProvider.GetUtcNow());
+		if (!cancellingResult.IsSuccess)
+		{
+			throw new InvalidOperationException(
+				$"Concurrent cancelling failed: {cancellingResult.ErrorInfo?.Message}");
+		}
+		await concurrentContext.SaveChangesAsync(ct);
+	}
+
+	protected ResiliencePipeline GetEmptyPipeline()
+	{
+		return new ResiliencePipelineBuilder().Build();
+	}
+
+	protected ResiliencePipeline GetConcurrencyPipeline()
+	{
+		return new ResiliencePipelineBuilder()
+			.AddDatabaseConcurrencyRetry(0)
+			.Build();
 	}
 }

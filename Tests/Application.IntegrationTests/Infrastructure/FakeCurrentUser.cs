@@ -1,6 +1,6 @@
 ﻿using Application.Interfaces;
 
-namespace Application.IntegrationTests;
+namespace Application.IntegrationTests.Infrastructure;
 
 public class FakeCurrentUser : ICurrentUser
 {

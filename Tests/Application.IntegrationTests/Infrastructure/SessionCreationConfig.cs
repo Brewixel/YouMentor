@@ -1,4 +1,4 @@
-namespace Application.IntegrationTests;
+namespace Application.IntegrationTests.Infrastructure;
 
 public sealed class SessionCreationConfig
 {

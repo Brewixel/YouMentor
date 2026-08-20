@@ -21,7 +21,7 @@ public class Cancel
 		ICurrentUser currentUser,
 		TimeProvider timeProvider,
 		ILogger<Handler> logger,
-		[FromKeyedServices(Consts.PipelineNames.DatabaseConcurrency)]
+		[FromKeyedServices(Consts.Pipelines.DatabaseConcurrency.Name)]
 			ResiliencePipeline concurrencyPipeline
 		) : IRequestHandler<Command, Result>
 	{
@@ -72,7 +72,7 @@ public class Cancel
 					"after {MaxRetries} retries",
 					request.SessionId,
 					mentorId.Value,
-					Consts.PipelineProps.MaxRetryAttempts);
+					Consts.Pipelines.DatabaseConcurrency.MaxRetryAttempts);
 
 				return Result.Failure(
 					"Unable to cancel session, please try again later");

@@ -1,9 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
-namespace Application.IntegrationTests;
+namespace Application.IntegrationTests.Interceptors;
 
-public class ConcurrencyExceptionInterceptor(int maxExceptionsCount) : SaveChangesInterceptor
+public class SillyExceptionInterceptor(int maxExceptionsCount) : BaseConcurrentInterceptor
 {
 	private int _exceptionsCount = 0;
 
@@ -12,6 +12,8 @@ public class ConcurrencyExceptionInterceptor(int maxExceptionsCount) : SaveChang
 		InterceptionResult<int> result,
 		CancellationToken cancellationToken = default)
 	{
+		RegisterSaveAttempt();
+
 		if (_exceptionsCount < maxExceptionsCount)
 		{
 			_exceptionsCount++;

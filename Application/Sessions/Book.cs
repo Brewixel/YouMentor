@@ -21,7 +21,7 @@ public class Book
 		ICurrentUser currentUser,
 		ILogger<Handler> logger,
 		TimeProvider timeProvider,
-		[FromKeyedServices(Consts.PipelineNames.DatabaseConcurrency)]
+		[FromKeyedServices(Consts.Pipelines.DatabaseConcurrency.Name)]
 			ResiliencePipeline concurrencyPipeline
 		) : IRequestHandler<Command, Result>
 	{
@@ -71,7 +71,7 @@ public class Book
 					"after {MaxRetries} retries",
 					request.SessionId,
 					studentId.Value,
-					Consts.PipelineProps.MaxRetryAttempts);
+					Consts.Pipelines.DatabaseConcurrency.MaxRetryAttempts);
 
 				return Result.Failure(
 					"Unable to book session, please try again later");
