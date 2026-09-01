@@ -1,5 +1,6 @@
 using Application.Core;
 using Application.Interfaces;
+using Contracts;
 using Domain.Results;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -22,7 +23,8 @@ public class Book
 		ILogger<Handler> logger,
 		TimeProvider timeProvider,
 		[FromKeyedServices(Consts.Pipelines.DatabaseConcurrency.Name)]
-			ResiliencePipeline concurrencyPipeline
+			ResiliencePipeline concurrencyPipeline,
+		IIntegrationEventPublisher eventPublisher
 		) : IRequestHandler<Command, Result>
 	{
 		public async Task<Result> Handle(Command request, CancellationToken ct)
@@ -31,9 +33,11 @@ public class Book
 			if (studentId == null)
 				return Result.Unauthorized();
 
+			BookingOutput output;
+
 			try
 			{
-				return await concurrencyPipeline.ExecuteAsync(
+				output = await concurrencyPipeline.ExecuteAsync(
 					async pipelineCancellationToken =>
 					{
 						var session = await context.Sessions.FirstOrDefaultAsync(
@@ -41,18 +45,26 @@ public class Book
 							pipelineCancellationToken);
 
 						if (session == null)
-							return Result.NotFound($"Session with id {request.SessionId} not found");
+							return new BookingOutput(Result.NotFound($"Session with id {request.SessionId} not found"));
 
 						var currentTime = timeProvider.GetUtcNow();
 						var bookingResult = session.Book(currentTime, studentId.Value);
 
 						if (!bookingResult.IsSuccess)
-							return bookingResult;
+							return new BookingOutput(bookingResult);
 
 						try
 						{
 							await context.SaveChangesAsync(pipelineCancellationToken);
-							return Result.Success();
+
+							return new BookingOutput(
+								Result.Success(),
+								new SessionBooked(
+									session.Id,
+									session.MentorId,
+									studentId.Value,
+									session.StartTime,
+									currentTime));
 						}
 						catch (DbUpdateConcurrencyException)
 						{
@@ -76,6 +88,17 @@ public class Book
 				return Result.Failure(
 					"Unable to book session, please try again later");
 			}
+
+			if (!output.Result.IsSuccess)
+				return output.Result;
+
+			await eventPublisher.PublishAsync(output.SessionBooked!, ct);
+
+			return output.Result;
 		}
+
+		private sealed record BookingOutput(
+			Result Result,
+			SessionBooked? SessionBooked = null);
 	}
 }
