@@ -10,6 +10,7 @@ namespace Application.Interfaces;
 public interface IAppDbContext
 {
 	DbSet<Session> Sessions { get; }
+	DbSet<OutboxMessage> OutboxMessages { get; }
 
 	ChangeTracker ChangeTracker { get; }
 

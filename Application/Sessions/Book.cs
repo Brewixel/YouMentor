@@ -1,5 +1,7 @@
 using Application.Core;
 using Application.Interfaces;
+using Application.Signals;
+using Contracts;
 using Domain.Results;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -22,7 +24,9 @@ public class Book
 		ILogger<Handler> logger,
 		TimeProvider timeProvider,
 		[FromKeyedServices(Consts.Pipelines.DatabaseConcurrency.Name)]
-			ResiliencePipeline concurrencyPipeline
+			ResiliencePipeline concurrencyPipeline,
+		IOutboxService outboxService,
+		OutboxSignal signal
 		) : IRequestHandler<Command, Result>
 	{
 		public async Task<Result> Handle(Command request, CancellationToken ct)
@@ -31,9 +35,11 @@ public class Book
 			if (studentId == null)
 				return Result.Unauthorized();
 
+			Result result;
+
 			try
 			{
-				return await concurrencyPipeline.ExecuteAsync(
+				result = await concurrencyPipeline.ExecuteAsync(
 					async pipelineCancellationToken =>
 					{
 						var session = await context.Sessions.FirstOrDefaultAsync(
@@ -49,9 +55,18 @@ public class Book
 						if (!bookingResult.IsSuccess)
 							return bookingResult;
 
+						outboxService.AddIntent(new SendNotification(
+							Guid.NewGuid(),
+							Consts.Notifications.Source,
+							session.MentorId,
+							Consts.Notifications.Channels.InApp,
+							$"Session {session.Id} booked by {studentId.Value}",
+							currentTime));
+
 						try
 						{
 							await context.SaveChangesAsync(pipelineCancellationToken);
+							signal.Notify();
 							return Result.Success();
 						}
 						catch (DbUpdateConcurrencyException)
@@ -76,6 +91,8 @@ public class Book
 				return Result.Failure(
 					"Unable to book session, please try again later");
 			}
+
+			return result;
 		}
 	}
 }

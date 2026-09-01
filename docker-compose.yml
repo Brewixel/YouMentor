@@ -1,49 +1,76 @@
 volumes:
-  pgdata:
-  keycloak-pgdata:
+    pgdata:
+    keycloak-pgdata:
 
 services:
-  api:
-    image: ${DOCKER_REGISTRY-}api
-    build:
-      context: .
-      dockerfile: Api/Dockerfile
-    ports:
-      - "5000:8080"
+    api:
+        image: ${DOCKER_REGISTRY-}api
+        build:
+            context: .
+            dockerfile: Api/Dockerfile
+        environment:
+            RabbitMq__Host: rabbitmq
+            RabbitMq__Username: youmentor
+            RabbitMq__Password: youmentor
+        depends_on:
+            - rabbitmq
+        ports:
+            - "5000:8080"
 
-  # db
-  postgres:
-    image: postgres:18-alpine
-    environment:
-      POSTGRES_PASSWORD: postgres
-    ports:
-      - "5435:5432"
-    volumes:
-      - pgdata:/var/lib/postgresql
+    # db
+    postgres:
+        image: postgres:18-alpine
+        environment:
+            POSTGRES_PASSWORD: postgres
+        ports:
+            - "5435:5432"
+        volumes:
+            - pgdata:/var/lib/postgresql
 
-  keycloak-db:
-      image: postgres:18-alpine
-      environment:
-          POSTGRES_DB: keycloak
-          POSTGRES_USER: keycloak
-          POSTGRES_PASSWORD: keycloak
-      ports:
-          - "5437:5432"
-      volumes:
-          - keycloak-pgdata:/var/lib/postgresql/data
+    keycloak-db:
+        image: postgres:18-alpine
+        environment:
+            POSTGRES_DB: keycloak
+            POSTGRES_USER: keycloak
+            POSTGRES_PASSWORD: keycloak
+        ports:
+            - "5437:5432"
+        volumes:
+            - keycloak-pgdata:/var/lib/postgresql/data
 
-  keycloak:
-      image: quay.io/keycloak/keycloak:26.6.3
-      command: start-dev
-      environment:
-          KC_BOOTSTRAP_ADMIN_USERNAME: admin
-          KC_BOOTSTRAP_ADMIN_PASSWORD: admin
-          KC_DB: postgres
-          KC_DB_URL_HOST: keycloak-db
-          KC_DB_URL_DATABASE: keycloak
-          KC_DB_USERNAME: keycloak
-          KC_DB_PASSWORD: keycloak
-      ports:
-          - "8080:8080"
-      depends_on:
-          - keycloak-db
+    keycloak:
+        image: quay.io/keycloak/keycloak:26.6.3
+        command: start-dev
+        environment:
+            KC_BOOTSTRAP_ADMIN_USERNAME: admin
+            KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+            KC_DB: postgres
+            KC_DB_URL_HOST: keycloak-db
+            KC_DB_URL_DATABASE: keycloak
+            KC_DB_USERNAME: keycloak
+            KC_DB_PASSWORD: keycloak
+        ports:
+            - "8080:8080"
+        depends_on:
+            - keycloak-db
+
+    rabbitmq:
+        image: rabbitmq:management
+        environment:
+            RABBITMQ_DEFAULT_USER: youmentor
+            RABBITMQ_DEFAULT_PASS: youmentor
+        ports:
+        - "5672:5672"
+        - "15672:15672"
+
+    notification-service:
+        image: ${DOCKER_REGISTRY-}notification-service
+        build:
+            context: .
+            dockerfile: NotificationService/Dockerfile
+        environment:
+            RabbitMq__Host: rabbitmq
+            RabbitMq__Username: youmentor
+            RabbitMq__Password: youmentor
+        depends_on:
+            - rabbitmq

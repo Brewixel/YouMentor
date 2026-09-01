@@ -11,4 +11,16 @@ public static class Consts
 			public const int DelayMilliseconds = 25;
 		}
 	}
+
+	public static class Notifications
+	{
+		public const string Source = "youmentor";
+
+		public static class Channels
+		{
+			public const string InApp = "in-app";
+			public const string Email = "email";
+			public const string Whatsapp = "whatsapp";
+		}
+	}
 }

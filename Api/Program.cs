@@ -2,11 +2,14 @@ using Api.Auth;
 using Api.Endpoints;
 using Api.ExceptionHandling;
 using Api.Middlewares;
+using Api.Workers;
 using Application.Behaviors;
 using Application.Core;
 using Application.Interfaces;
+using Application.Services;
 using Application.Sessions;
 using FluentValidation;
+using Infrastructure.Messaging;
 using Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -77,6 +80,9 @@ internal class Program
 			pipelineBuilder => pipelineBuilder.AddDatabaseConcurrencyRetry(
 				Consts.Pipelines.DatabaseConcurrency.DelayMilliseconds)
 		);
+
+		builder.Services.AddMessaging(builder.Configuration);
+		builder.Services.AddHostedService<OutboxWorker>();
 
 		var app = builder.Build();
 

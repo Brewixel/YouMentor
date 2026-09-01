@@ -10,15 +10,21 @@ public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
 	{
 		var basePath = Directory.GetCurrentDirectory();
 
+		var environment = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT")
+		                  ?? Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")
+		                  ?? "Production";
+
 		var configuration = new ConfigurationBuilder()
 			.SetBasePath(basePath)
 			.AddJsonFile("appsettings.json", optional: true)
-			.AddJsonFile(Path.Combine(basePath, "../Api/appsettings.json"), optional: true)
+			.AddJsonFile($"appsettings.{environment}.json", optional: true)
 			.Build();
 
-		var builder = new DbContextOptionsBuilder<AppDbContext>();
+		var connectionString =
+			Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")
+			?? configuration.GetConnectionString("DefaultConnection");
 
-		var connectionString = configuration.GetConnectionString("DefaultConnection");
+		var builder = new DbContextOptionsBuilder<AppDbContext>();
 
 		if (string.IsNullOrEmpty(connectionString))
 		{
