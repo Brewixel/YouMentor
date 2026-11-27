@@ -10,6 +10,11 @@ public static class Consts
 			public const int MaxRetryAttempts = 2;
 			public const int DelayMilliseconds = 25;
 		}
+		public static class OutboxSend
+		{
+			public const string Name = "outbox-send";
+			public const int TimeoutSeconds = 5;
+		}
 	}
 
 	public static class Notifications

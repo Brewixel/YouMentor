@@ -1,9 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace Application.Interfaces;
 
@@ -13,6 +11,7 @@ public interface IAppDbContext
 	DbSet<OutboxMessage> OutboxMessages { get; }
 
 	ChangeTracker ChangeTracker { get; }
+	DatabaseFacade Database { get; }
 
 	Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }

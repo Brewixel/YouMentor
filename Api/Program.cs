@@ -80,6 +80,10 @@ internal class Program
 			pipelineBuilder => pipelineBuilder.AddDatabaseConcurrencyRetry(
 				Consts.Pipelines.DatabaseConcurrency.DelayMilliseconds)
 		);
+		builder.Services.AddResiliencePipeline(Consts.Pipelines.OutboxSend.Name, pipeline =>
+		{
+			pipeline.AddTimeout(TimeSpan.FromSeconds(Consts.Pipelines.OutboxSend.TimeoutSeconds));
+		});
 
 		builder.Services.AddMessaging(builder.Configuration);
 		builder.Services.AddHostedService<OutboxWorker>();
